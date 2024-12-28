@@ -38,9 +38,10 @@ public static class AST {
             foreach (var c in value) {
                 code.Add("push temp 0");
                 code.Add($"push constant {(int)c}");
-                code.Add("call String.appendChar 1");
+                code.Add("call String.appendChar 2");
+                code.Add("pop temp 0");
             }
-
+            code.Add("push temp 0");
         }
     }
     public class ArrayIndex : Expr, LHS, TermTypes {

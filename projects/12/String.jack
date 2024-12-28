@@ -23,7 +23,7 @@ class String {
         }
         let maxLength = maximumLength;
         let currentLength = 0;
-        return;
+        return this;
     }
 
     /** Disposes this string. */
@@ -92,7 +92,13 @@ class String {
         }
 
         //TODO: Handle Negative numbers
-        let ii = 0;
+        if (val < 0) {
+            let chars[0] = 45;
+            let val = val * -1;
+            let ii = 1;
+        } else {
+            let ii = 0;
+        }
         let newVal = val;
         while (~(newVal = 0)) {
             let newVal = newVal / 10;
@@ -101,7 +107,7 @@ class String {
         let currentLength = ii;
         while (~(val = 0)) {
             let ii = ii - 1;
-            let chars[ii] = Math.modulo(val, 10);
+            let chars[ii] = 48 + Math.modulo(val, 10);
             let val = val / 10;
         }
     }

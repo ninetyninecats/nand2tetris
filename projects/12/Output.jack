@@ -233,9 +233,16 @@ class Output {
 
     /** Advances the cursor to the beginning of the next line. */
     function void println() {
+        let cx = 0;
+        let cy = cy + 1;
+        return;
     }
 
     /** Moves the cursor one column back. */
     function void backSpace() {
+        if (cx > 0) {
+            let cx = cx - 1;
+        }
+        return;
     }
 }

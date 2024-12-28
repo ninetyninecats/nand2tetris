@@ -59,8 +59,12 @@ class Math {
         if (y > x) {
             return 0;
         }
-        let q = x / (y + y);
-        let q = q + q;
+        if (y > 16383) {
+            let q = 0;
+        } else {
+            let q = x / (y + y);
+            let q = q + q;
+        }
         if ((x - (q * y)) < y) {
             return q;
         } else {
