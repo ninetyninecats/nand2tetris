@@ -1,0 +1,185 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Screen.jack
+
+/**
+ * A library of functions for displaying graphics on the screen.
+ * The Hack physical screen consists of 512 rows (indexed 0..511, top to bottom)
+ * of 256 pixels each (indexed 0..255, left to right). The top left pixel on 
+ * the screen is indexed (0,0).
+ */
+class Screen {
+    static Array screen;
+    static int screenWords;
+    static boolean currentColor;
+    static Array pixelMasks;
+
+    /** Initializes the Screen. */
+    function void init() {
+        var int mask;
+        var int ii;
+        let screen = 16384;
+        let screenWords = (512 * 256) / 16;
+        let currentColor = true;
+        let pixelMasks = Array.new(16);
+        let mask = 1;
+        let ii = 0;
+        while (ii < 16) {
+            let pixelMasks[ii] = mask;
+            let mask = mask + mask;
+            let ii = ii + 1;
+        }
+        return;
+    }
+
+    /** Erases the entire screen. */
+    function void clearScreen() {
+        var int ii;
+        let ii = 0;
+        while (ii < screenWords) {
+            let screen[ii] = 0;
+            let ii = ii + 1;
+        }
+        return;
+    }
+
+    /** Sets the current color, to be used for all subsequent drawXXX commands.
+     *  Black is represented by true, white by false. */
+    function void setColor(boolean b) {
+        let currentColor = b;
+        return;
+    }
+
+    /** Draws the (x,y) pixel, using the current color. */
+    function void drawPixel(int x, int y) {
+        var int wordIndex, mask;
+        let wordIndex = (32 * y) + (x / 16);
+        let mask = pixelMasks[Math.modulo(x, 16)];
+        if (currentColor) {
+            let screen[wordIndex] = screen[wordIndex] | mask;
+        } else {            
+            let screen[wordIndex] = screen[wordIndex] & (~mask);
+        }
+        return;
+    }
+
+    function void drawHalfWord(int x, int y, int hw) {
+        var int wordIndex;
+        let wordIndex = (32 * y) + (x / 2);
+        if ((x & 1) = 0) {
+            let screen[wordIndex] = (screen[wordIndex] & -256) | hw;
+        } else {
+            let screen[wordIndex] = (screen[wordIndex] & 255) | (hw * 256);
+        }
+        return;
+    }
+
+    /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
+    function void drawLine(int x1, int y1, int x2, int y2) {
+        var int t;
+        if (x1 > x2) {
+            let t = x1;
+            let x1 = x2;
+            let x2 = t;
+            let t = y1;
+            let y1 = y2;
+            let y2 = t;
+        }
+        if (x1 = x2) {
+            do Screen.drawVerticalLine(x1, y1, y2);
+        } else { 
+            if (y1 = y2) {
+                do Screen.drawHorizontalLine(x1, x2, y1);
+            } else {
+                do Screen.drawDiagonalLine(x1, y1, x2, y2);
+            }
+        }
+        return;
+
+    }
+    function void drawHorizontalLine(int x1, int x2, int y) {
+        var int x;
+        let x = x1;
+        while (~(x > x2)) {
+            do Screen.drawPixel(x, y);
+            let x = x + 1;
+        }
+        return;
+    }
+    function void drawVerticalLine(int x, int y1, int y2) {
+        var int y;
+        if (y1 > y2) {
+            let y = y1;
+            let y1 = y2;
+            let y2 = y;
+        }
+        let y = y1;
+        while (~(y > y2)) {
+            do Screen.drawPixel(x, y);
+            let y = y + 1;
+        }
+        return;
+    }
+    function void drawDiagonalLine(int x1, int y1, int x2, int y2) {
+        var int a, b, dx, dy, diff, invertb;
+        let a = 0;
+        let b = 0;
+        let dx = x2 - x1;
+        if (y1 > y2) {
+            let dy = y1 - y2;
+            let invertb = -1;
+        } else {
+            let dy = y2 - y1;
+            let invertb = 1;
+        }
+        let diff = 0;
+        while ((~(a > dx)) & (~(b > dy))) {
+            do Screen.drawPixel(x1 + a, y1 + (b * invertb));
+            if (diff < 0) {
+                let a = a + 1;
+                let diff = diff + dy;
+            } else {
+                let b = b + 1;
+                let diff = diff - dx;
+            }
+        }
+        return;
+    }
+
+    /** Draws a filled rectangle whose top left corner is (x1, y1)
+     * and bottom right corner is (x2,y2), using the current color. */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+        var int t, y;
+        if (x1 > x2) {
+            let t = x1;
+            let x1 = x2;
+            let x2 = t;
+        }
+        if (y1 > y2) {
+            let t = y1;
+            let y1 = y2;
+            let y2 = t;
+        }
+        let y = y1;
+        while (~(y > y2)) {
+            do Screen.drawHorizontalLine(x1, x2, y);
+            let y = y + 1;
+        }
+        return;
+    }
+
+    /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+    function void drawCircle(int x, int y, int r) {
+        var int dy, dx, r2;
+        let dy = 0;
+        let r2 = r * r;
+        while (~(dy > r)) {
+            let dx = Math.sqrt(r2 - (dy * dy));
+            do Screen.drawHorizontalLine(x - dx, x + dx, y - dy);
+            do Screen.drawHorizontalLine(x - dx, x + dx, y + dy);
+            let dy = dy + 1;
+        }
+        return;
+    }
+}
